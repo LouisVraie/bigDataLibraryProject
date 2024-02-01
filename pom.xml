@@ -37,6 +37,13 @@
             <version>4.13.0</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/com.scylladb -->
+        <dependency>
+            <groupId>com.scylladb</groupId>
+            <artifactId>java-driver-query-builder</artifactId>
+            <version>4.17.0.0</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
         <!--dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -75,7 +82,7 @@
                                 <Multi-Release>true</Multi-Release>
                             </manifestEntries>
                             <manifest>
-                                <mainClass>src.Main</mainClass>
+                                <mainClass>src.java.Main</mainClass>
                             </manifest>
                         </archive>
                         <descriptorRefs>

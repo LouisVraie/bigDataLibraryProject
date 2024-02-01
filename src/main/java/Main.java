@@ -6,6 +6,13 @@ import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 import com.datastax.oss.driver.api.querybuilder.insert.InsertInto;
 import com.datastax.oss.driver.api.querybuilder.select.Select;
 
+// For DML queries, such as SELECT
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.*;
+
+// For DDL queries, such as CREATE TABLE
+import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.*;
+
+
 public class Main {
 
     public static void main(String[] args) {
@@ -40,6 +47,15 @@ public class Main {
             SimpleStatement statement = query.build();
             ResultSet rs = session.execute(statement);
             Row row = rs.one();
+        }
+
+        try (CqlSession session = CqlSession.builder().build()) {
+            Select query = selectFrom("system", "local").column("release_version"); // SELECT release_version FROM system.local
+            SimpleStatement statement = query.build();
+
+            ResultSet rs = session.execute(statement);
+            Row row = rs.one();
+            System.out.println(row.getString("release_version"));
         }
     }
 }
