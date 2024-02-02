@@ -30,6 +30,7 @@ public class Author {
                     .whereColumn("lastname_a").isEqualTo(QueryBuilder.literal(lastname))
                     .allowFiltering();
         }
+        return null;
     }
     public static void test(){
         try (CqlSession session = database.getSession()){
