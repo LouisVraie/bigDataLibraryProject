@@ -41,7 +41,7 @@ public class Book {
             .withColumn("year", DataTypes.INT)
             .withColumn("summary", DataTypes.TEXT)
             .withColumn("categories", DataTypes.setOf(DataTypes.TEXT))
-            .withColumn("authors", DataTypes.setOf(DataTypes.frozenMapOf(DataTypes.TEXT, DataTypes.TEXT)));
+            .withColumn("authors", DataTypes.setOf(SchemaBuilder.udt(Author.TYPE_NAME, true)));
 
         session.execute(createTable.build());
         System.out.println("Table '"+TABLE_NAME+"' created successfully.");

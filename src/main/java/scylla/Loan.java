@@ -137,7 +137,7 @@ public class Loan {
                 .withColumn("firstname", DataTypes.TEXT)
                 .withColumn("lastname", DataTypes.TEXT)
                 .withColumn("title", DataTypes.TEXT)
-                .withColumn("authors", DataTypes.setOf(DataTypes.frozenMapOf(DataTypes.TEXT, DataTypes.TEXT)))
+                .withColumn("authors", DataTypes.setOf(SchemaBuilder.udt(Author.TYPE_NAME, true)))
                 .withColumn("loan_date", DataTypes.DATE)
                 .withColumn("expiry_date", DataTypes.DATE)
                 .withColumn("due_date", DataTypes.DATE);
