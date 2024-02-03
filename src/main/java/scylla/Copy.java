@@ -15,4 +15,12 @@ import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.*;
 import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.*;
 
 public class Copy {
+    private static Database database = new Database();
+    public String id_copy;
+    public String id_book;
+    public String title;
+    public String edition_name;
+    public String state;
+    public String wear;
+
 }
