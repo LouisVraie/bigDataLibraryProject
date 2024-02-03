@@ -14,13 +14,15 @@ import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.*;
 // For DDL queries, such as CREATE TABLE
 import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.*;
 
-
 public class Main {
+    private final static Database database = new Database();
 
     public static void main(String[] args) {
+        database.createDatabase();
+    }
 
-        try (CqlSession session = CqlSession.builder().build()) {
-            session.execute("CREATE KEYSPACE IF NOT EXISTS library WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3};");
+    public static void test(){
+        try (CqlSession session = database.getSession()) {
             session.execute("CREATE COLUMNFAMILY IF NOT EXISTS library.User (id bigint PRIMARY KEY, name text);");
             session.execute("INSERT INTO library.User (id, name) values (1, 'john doe');");
 
@@ -36,15 +38,15 @@ public class Main {
         try (CqlSession session = CqlSession.builder().build()) {
             InsertInto insert = QueryBuilder.insertInto("library", "User");
             SimpleStatement statement = insert.value("id", QueryBuilder.literal(2))
-              .value("name", QueryBuilder.literal("dev user"))
-              .build();
+                    .value("name", QueryBuilder.literal("dev user"))
+                    .build();
             ResultSet rs = session.execute(statement);
         }
 
         try (CqlSession session = CqlSession.builder().build()) {
             Select query = QueryBuilder.selectFrom("library", "User").all()
-              .whereColumn("name").isEqualTo(QueryBuilder.literal("dev user"))
-              .allowFiltering();
+                    .whereColumn("name").isEqualTo(QueryBuilder.literal("dev user"))
+                    .allowFiltering();
 
             SimpleStatement statement = query.build();
             ResultSet rs = session.execute(statement);

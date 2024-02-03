@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  scylla-db:
+    image: scylladb/scylla
+    container_name: scylla-db
+    ports:
+      - "9042:9042"  # Port for CQL (Cassandra Query Language)
+    volumes:
+      - scylla-data:/var/lib/scylla
+    command: --smp 1 --memory 750M --api-address 0.0.0.0
+    restart: always
+
+volumes:
+  scylla-data:
