@@ -22,10 +22,19 @@ public class Reader extends MongoDBCollection {
 
     public void loan_count_by_reader(Document filters){
         System.out.println(" \n\n\n #### Loan count by reader ################################");
-        List<Document> documents = collection.find(filters).into(List.of());
+        // Use a mutable list
+        List<Document> documents = new ArrayList<>();
+        collection.find(filters).into(documents);
         Map<String, Long> loanCountByReader = documents.stream()
-                .flatMap(doc -> doc.getList("loans", Document.class).stream())
-                .filter(loan -> loan.getString("return_date").isEmpty())
+                .flatMap(doc -> {
+                    List<Document> loans = doc.getList("loans", Document.class, Collections.emptyList());
+                    return loans.stream();
+                })
+                .filter(loan -> {
+                    // Check if "return_date" exists and compare, provide default value otherwise
+                    String returnDate = loan.getString("return_date"); // Retrieve the return date
+                    return returnDate == null || returnDate.isEmpty(); // Check if null or empty
+                })
                 .collect(Collectors.groupingBy(
                         loan -> loan.getString("id_reader"),
                         Collectors.counting()
@@ -35,6 +44,7 @@ public class Reader extends MongoDBCollection {
             System.out.println("Reader ID: " + entry.getKey() + ", Number of Loans with return_date = \"\": " + entry.getValue());
         }
     }
+
 
     public void loaner_information(Document whereQuery) {
         System.out.println(" \n\n\n #### Loaner information ################################");

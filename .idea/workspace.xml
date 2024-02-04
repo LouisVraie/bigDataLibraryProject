@@ -4,8 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e9770e5c-4b6c-4b16-85b2-df427e2f0bb4" name="Changes" comment="implemented library">
-      <change beforePath="$PROJECT_DIR$/src/main/java/mongodb/Book.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/mongodb/Book.java" afterDir="false" />
+    <list default="true" id="e9770e5c-4b6c-4b16-85b2-df427e2f0bb4" name="Changes" comment="added string to delimit function call in the output stream.">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/mongodb/Library.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/mongodb/Library.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/mongodb/Reader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/mongodb/Reader.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -93,7 +94,15 @@
       <option name="project" value="LOCAL" />
       <updated>1707067716154</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="added string to delimit function call in the output stream.">
+      <option name="closed" value="true" />
+      <created>1707067969291</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1707067969291</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -114,6 +123,7 @@
     <MESSAGE value="idk why but push" />
     <MESSAGE value="implemented book and reader" />
     <MESSAGE value="implemented library" />
-    <option name="LAST_COMMIT_MESSAGE" value="implemented library" />
+    <MESSAGE value="added string to delimit function call in the output stream." />
+    <option name="LAST_COMMIT_MESSAGE" value="added string to delimit function call in the output stream." />
   </component>
 </project>

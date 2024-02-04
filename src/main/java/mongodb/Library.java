@@ -65,7 +65,7 @@ public class Library {
 
             // Check if a specific reader can loan 6 more books
             boolean canLoan = reader.can_loan_copies("5", 6);
-            System.out.println("Reader ID 5 can loan more copies: " + canLoan);.
+            System.out.println("Reader ID 5 can loan more copies: " + canLoan);
         } catch (Exception e) {
             e.printStackTrace();
         }
