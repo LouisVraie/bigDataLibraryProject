@@ -98,6 +98,15 @@ public class Book implements CRUD<Book>, TableOperation{
             e.printStackTrace();
         }
     }
+
+    public static void testBook(){
+
+
+        // Search by name
+        Set<Book> books = Book.searchByName("Zathura");
+        System.out.println(books);
+    }
+
     // Getters et Setters
     public UUID getIdBook() {
         return idBook;
@@ -206,7 +215,7 @@ public class Book implements CRUD<Book>, TableOperation{
         Set<String> categories = (Set<String>) row.getObject("categories");
         Set<Map<String, String>> authors1 = (Set<Map<String, String>>) row.getObject("authors");
 
-        Set<Author> authors = null;
+        Set<Author> authors = new HashSet<Author>();
 
         for (Map<String, String> a : authors1) {
             authors.add(Author.toAuthor(a));
@@ -247,19 +256,8 @@ public class Book implements CRUD<Book>, TableOperation{
         }
     }
 
-    public void searchByName() {
-        try (CqlSession session = database.getSession()) {
-            Select query = selectFrom(Book.TABLE_NAME).all();
-
-            SimpleStatement statement = query.build();
-            ResultSet rs = session.execute(statement);
-            Row row = rs.one();
-        }
-    }
-
-
     public static Set<Book> searchByName(String name) {
-
+        System.out.println();
         Set<Book> books = new HashSet<>();
 
         try (CqlSession session = database.getSession()) {

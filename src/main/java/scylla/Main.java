@@ -32,9 +32,8 @@ public class Main {
         
         // Test for each class
         Reader.testReader();
-        Set<Book> books = Book.searchByName("Zathura");
+        Book.testBook();
 
-        System.out.println(books);
         // Book book = new Book(UUID.randomUUID(), "The Hobbit", 1937, "The Hobbit is a children's fantasy novel by English author J. R. R. Tolkien.", Set.of("Fantasy"), Set.of(new Author("J. R. R.", "Tolkien")));
         // Book.insert(book);
     }
