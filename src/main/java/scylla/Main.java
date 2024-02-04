@@ -33,7 +33,8 @@ public class Main {
         // Test for each class
         //Reader.testReader();
         //Book.testBook();
-        Copy.testCopy();
+        // Copy.testCopy();
+        Loan.testLoan();
     }
 
     public static void test(){

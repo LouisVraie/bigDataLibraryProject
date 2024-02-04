@@ -278,8 +278,8 @@ public class Copy implements CRUD<Copy>, TableOperation {
             System.out.println(TABLE_NAME + " inserted ? "+ result.wasApplied());
         }
     }
-    public static void insert(ArrayList<Copy> books) {
-        for (Copy entity : books) {
+    public static void insert(ArrayList<Copy> copies) {
+        for (Copy entity : copies) {
             entity.insert();
         }
     }
