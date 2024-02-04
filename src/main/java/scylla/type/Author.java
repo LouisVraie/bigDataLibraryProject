@@ -45,6 +45,10 @@ public class Author {
         return map;
     }
 
+    public static Author toAuthor(Map<String, String> map){
+        return new Author(map.get("firstname"), map.get("lastname"));
+    }
+
     /**
      * Create UDT for Author
      * @param session
