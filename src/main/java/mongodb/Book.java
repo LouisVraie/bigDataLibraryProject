@@ -12,14 +12,27 @@ import java.util.stream.Collectors;
 
 public class Book extends MongoDBCollection {
 
+    // Placeholder for printBlock, a Consumer<Document> to output the results of aggregations
+    private Consumer<Document> printBlock = document -> System.out.println(document.toJson());
+
     public Book(MongoDatabase database) {
         super(database);
         this.collectionName = "book";
         this.collection = database.getCollection(collectionName, Document.class);
+
+        createIndexes();
+    }
+
+    public void createIndexes() {
+        // Index sur editions.copies.copy_id
+        collection.createIndex(Indexes.ascending("editions.copies.copy_id"));
+
+        // Index multi sur authors.lastname et authors.firstname
+        collection.createIndex(Indexes.compoundIndex(Indexes.ascending("authors.lastname"), Indexes.ascending("authors.firstname")));
     }
 
     public void group_by_categories(Document filters) {
-        System.out.println(" \n\n\n #### Group by categories ################################");
+        System.out.println(" \n#### Group by categories ################################");
         Bson match = Aggregates.match(filters);
         Bson unwind = Aggregates.unwind("$categories");
         Bson group = Aggregates.group("$categories", Accumulators.sum("count", 1));
@@ -29,7 +42,7 @@ public class Book extends MongoDBCollection {
     }
 
     public void copy_number(Document filters) {
-        System.out.println(" \n\n\n #### Copy number ################################");
+        System.out.println(" \n#### Copy number ################################");
         Bson match = Aggregates.match(filters);
         Bson unwind = Aggregates.unwind("$editions");
         Bson unwindCopies = Aggregates.unwind("$editions.copies");
@@ -40,7 +53,7 @@ public class Book extends MongoDBCollection {
     }
 
     public void worst_book_copies(Document filters) {
-        System.out.println(" \n\n\n #### Worst book copies ################################");
+        System.out.println(" \n#### Worst book copies ################################");
         Bson match = Aggregates.match(filters);
         Bson unwind = Aggregates.unwind("$editions");
         Bson unwindCopies = Aggregates.unwind("$editions.copies");
@@ -54,7 +67,7 @@ public class Book extends MongoDBCollection {
     }
 
     public void available_copies(Document filters) {
-        System.out.println(" \n\n\n #### Available copies ################################");
+        System.out.println(" \n#### Available copies ################################");
         Bson match = Aggregates.match(filters);
         Bson unwind = Aggregates.unwind("$editions");
         Bson unwindCopies = Aggregates.unwind("$editions.copies");
@@ -65,14 +78,11 @@ public class Book extends MongoDBCollection {
         this.collection.aggregate(pipeline).forEach(printBlock);
     }
 
-    // Placeholder for printBlock, a Consumer<Document> to output the results of aggregations
-    private Consumer<Document> printBlock = document -> System.out.println(document.toJson());
-
     // Methods requiring cross-collection data or more complex data relationships
     // Conceptual approaches provided; actual implementation would depend on specific application logic and data model
 
     public void most_read_author(Document mostReadAuthorFilter, int number) {
-        System.out.println(" \n\n\n #### Most read author ################################");
+        System.out.println(" \n#### Most read author ################################");
 
         // Step 1: Count loans per copy from the readers collection
         MongoCollection<Document> readersCollection = database.getCollection("readers");
@@ -113,12 +123,8 @@ public class Book extends MongoDBCollection {
         });
 
 
-
         // Step 3: Identify the most read authors based on top 'number' of books
-        List<Map.Entry<String, Long>> topBooks = bookLoanCount.entrySet().stream()
-                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
-                .limit(number)
-                .collect(Collectors.toList());
+        List<Map.Entry<String, Long>> topBooks = bookLoanCount.entrySet().stream().sorted(Map.Entry.<String, Long>comparingByValue().reversed()).limit(number).collect(Collectors.toList());
 
         for (Map.Entry<String, Long> entry : topBooks) {
             String title = entry.getKey();
@@ -126,9 +132,7 @@ public class Book extends MongoDBCollection {
                 // Assuming each book document contains an 'authors' array of documents
                 List<Document> authors = book.getList("authors", Document.class, Collections.emptyList());
                 // Creating a string representation of all authors
-                String authorsStr = authors.stream()
-                        .map(author -> author.getString("firstname") + " " + author.getString("lastname"))
-                        .collect(Collectors.joining(", "));
+                String authorsStr = authors.stream().map(author -> author.getString("firstname") + " " + author.getString("lastname")).collect(Collectors.joining(", "));
                 System.out.println("Book: " + title + ", Authors: " + authorsStr);
             });
         }
@@ -141,7 +145,7 @@ public class Book extends MongoDBCollection {
     }
 
     public void loan_information(Document whereQuery) {
-        System.out.println(" \n\n\n #### Loan information ################################");
+        System.out.println(" \n#### Loan information ################################");
         // Assuming we're looking for loan information for specific criteria
         Bson match = Aggregates.match(whereQuery);
         List<Bson> pipeline = Arrays.asList(match);
@@ -151,7 +155,7 @@ public class Book extends MongoDBCollection {
     }
 
     public void loan_trends(Document whereQuery, int number) {
-        System.out.println(" \n\n\n #### Loan trends ################################");
+        System.out.println(" \n#### Loan trends ################################");
 
         // Étape 1 : Comptage des emprunts par copie
         MongoCollection<Document> readersCollection = database.getCollection("readers");
@@ -166,25 +170,17 @@ public class Book extends MongoDBCollection {
 
         // Étape 2 : Aggrégation des emprunts par livre
         Map<String, Long> bookLoanCount = new HashMap<>();
-        collection.find(new Document("_id", new Document("$in", new ArrayList<>(copyLoanCount.keySet()))))
-                .forEach((Consumer<Document>) book -> {
-                    long bookLoans = book.getList("editions", Document.class, Collections.emptyList()).stream()
-                            .flatMap(edition -> ((List<Document>) edition.get("copies")).stream())
-                            .filter(copy -> copyLoanCount.containsKey(String.valueOf(copy.get("copy_id"))))
-                            .mapToLong(copy -> copyLoanCount.get(String.valueOf(copy.get("copy_id"))))
-                            .sum();
+        collection.find(new Document("_id", new Document("$in", new ArrayList<>(copyLoanCount.keySet())))).forEach((Consumer<Document>) book -> {
+            long bookLoans = book.getList("editions", Document.class, Collections.emptyList()).stream().flatMap(edition -> ((List<Document>) edition.get("copies")).stream()).filter(copy -> copyLoanCount.containsKey(String.valueOf(copy.get("copy_id")))).mapToLong(copy -> copyLoanCount.get(String.valueOf(copy.get("copy_id")))).sum();
 
-                    if (bookLoans > 0) {
-                        String title = book.getString("title");
-                        bookLoanCount.put(title, bookLoanCount.getOrDefault(title, 0L) + bookLoans);
-                    }
-                });
+            if (bookLoans > 0) {
+                String title = book.getString("title");
+                bookLoanCount.put(title, bookLoanCount.getOrDefault(title, 0L) + bookLoans);
+            }
+        });
 
         // Étape 3 : Sélection et affichage des "n" livres les plus empruntés
-        bookLoanCount.entrySet().stream()
-                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
-                .limit(number)
-                .forEach(entry -> System.out.println("Book: " + entry.getKey() + ", Loans: " + entry.getValue()));
+        bookLoanCount.entrySet().stream().sorted(Map.Entry.<String, Long>comparingByValue().reversed()).limit(number).forEach(entry -> System.out.println("Book: " + entry.getKey() + ", Loans: " + entry.getValue()));
     }
 
 }

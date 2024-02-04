@@ -4,10 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e9770e5c-4b6c-4b16-85b2-df427e2f0bb4" name="Changes" comment="End mongodb">
+    <list default="true" id="e9770e5c-4b6c-4b16-85b2-df427e2f0bb4" name="Changes" comment="End - everything works fine except loand_trends()">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/mongodb/Book.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/mongodb/Book.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/mongodb/Library.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/mongodb/Library.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/mongodb/MongoDBCollection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/mongodb/MongoDBCollection.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/mongodb/Reader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/mongodb/Reader.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -29,6 +30,20 @@
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "H4znow"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings">
+    <option name="selectedUrlAndAccountId">
+      <UrlAndAccount>
+        <option name="accountId" value="2d0551b6-1f6e-4694-82b4-43214ac017dd" />
+        <option name="url" value="https://github.com/LouisVraie/bigDataLibraryProject.git" />
+      </UrlAndAccount>
+    </option>
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -119,7 +134,15 @@
       <option name="project" value="LOCAL" />
       <updated>1707071725341</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="End - everything works fine except loand_trends()">
+      <option name="closed" value="true" />
+      <created>1707077079952</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1707077079952</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -143,6 +166,7 @@
     <MESSAGE value="added string to delimit function call in the output stream." />
     <MESSAGE value="some method works" />
     <MESSAGE value="End mongodb" />
-    <option name="LAST_COMMIT_MESSAGE" value="End mongodb" />
+    <MESSAGE value="End - everything works fine except loand_trends()" />
+    <option name="LAST_COMMIT_MESSAGE" value="End - everything works fine except loand_trends()" />
   </component>
 </project>

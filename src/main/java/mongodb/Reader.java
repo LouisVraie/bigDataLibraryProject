@@ -2,6 +2,7 @@ package mongodb;
 
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Indexes;
 import org.bson.Document;
 
 import java.text.ParseException;
@@ -15,6 +16,15 @@ public class Reader extends MongoDBCollection {
         super(database);
         this.collectionName = "reader";
         this.collection = database.getCollection(collectionName);
+        createIndexes();
+    }
+
+    public void createIndexes() {
+        // Index sur lastname
+        collection.createIndex(Indexes.ascending("lastname"));
+
+        // Index sur email
+        collection.createIndex(Indexes.ascending("email"));
     }
 
     public void loan_count_by_reader(Document filters) {
