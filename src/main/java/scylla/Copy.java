@@ -3,6 +3,7 @@ package scylla;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.metadata.schema.ClusteringOrder;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
@@ -324,6 +325,26 @@ public class Copy implements CRUD<Copy>, TableOperation {
             row.getBoolean("state"),
             row.getString("wear")
         );
+    }
+
+    public static Set<Copy> groupByBookAndEdition(String title, String edition_name) {
+        System.out.println(TABLE_NAME + " : groupByBookAndEdition");
+        Set<Copy> copy = new HashSet<>();
+
+        try (CqlSession session = database.getSession()) {
+            Select query = selectFrom(Book.TABLE_NAME).all()
+                    .whereColumn("title").isEqualTo(QueryBuilder.literal(title))
+                    .whereColumn("edition_name").isEqualTo(QueryBuilder.literal(edition_name))
+                    .allowFiltering();
+
+            SimpleStatement statement = query.build();
+            ResultSet rs = session.execute(statement);
+
+            for (Row row : rs) {
+                copy.add(Copy.buildCopyFromRow(row));
+            }
+        }
+        return copy;
     }
 
 }
