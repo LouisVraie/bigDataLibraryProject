@@ -208,6 +208,24 @@ public class Book implements CRUD<Book>, TableOperation{
                 '}';
     }
 
+    public static void createIndex(String columnName){
+        try (CqlSession session = database.getSession()) {
+            String indexName = TABLE_NAME + "_" + columnName + "_idx";
+
+            String createIndexQuery = "CREATE INDEX IF NOT EXISTS " + indexName +
+                    " ON " + TABLE_NAME + " (" + columnName + ");";
+
+            ResultSet result = session.execute(createIndexQuery);
+            if (result.wasApplied()) {
+                System.out.println("Index '" + indexName + "' created successfully.");
+            } else {
+                System.out.println("Failed to create index '" + indexName + "'.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
     public Book get(UUID id){
         try (CqlSession session = database.getSession()){
             System.out.println(TABLE_NAME+" get :");
