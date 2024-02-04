@@ -172,10 +172,10 @@ public class Copy implements CRUD<Copy>, TableOperation {
         System.out.println(copy1);
 
         // Create an index
-        Copy.createIndex("title");
+        Copy.createIndex("edition_name");
 
         // Get all copies
-        List<Copy> copyList = copy.getAll(null, 10, "title");
+        List<Copy> copyList = copy.getAll(null, 10, "edition_name");
         for (Copy c : copyList) {
             System.out.println(c);
         }

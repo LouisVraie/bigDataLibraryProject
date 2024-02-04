@@ -119,6 +119,9 @@ public class Book implements CRUD<Book>, TableOperation{
         Book getBook = book.get(UUID.fromString("00000000-0000-0000-0000-100000000000"));
         System.out.println(getBook);
 
+        // Create index
+        Book.createIndex("title");
+
         // Get all books
         List<Book> allBooks = book.getAll(null, 10, "title");
         for (Book b : allBooks) {
@@ -225,7 +228,7 @@ public class Book implements CRUD<Book>, TableOperation{
             e.printStackTrace();
         }
     }
-    
+
     public Book get(UUID id){
         try (CqlSession session = database.getSession()){
             System.out.println(TABLE_NAME+" get :");
