@@ -48,6 +48,14 @@ public class Author {
         this.lastname = lastname;
     }
 
+
+    public Map<String, String> getAuthorFormated(){
+        Map<String, String> map = new HashMap<>();
+        map.put("firstname", firstname);
+        map.put("lastname", lastname);
+        return map;
+    }
+
     /**
      * Create UDT for Author
      * @param session

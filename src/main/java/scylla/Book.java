@@ -101,10 +101,7 @@ public class Book implements CRUD<Book> {
         Set<Map<String, String>> set = new HashSet<>();
 
         for (Author author : authors) {
-            Map<String, String> map = new HashMap<>();
-            map.put("firstname", author.getFirstname());
-            map.put("lastname", author.getLastname());
-            set.add(map);
+            set.add(author.getAuthorFormated());
         }
         return set;
     }
