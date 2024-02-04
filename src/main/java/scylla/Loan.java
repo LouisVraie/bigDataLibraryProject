@@ -1,20 +1,26 @@
 package scylla;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.querybuilder.SchemaBuilder;
 import com.datastax.oss.driver.api.querybuilder.schema.CreateTable;
 import scylla.type.Author;
+import scylla.utils.Converter;
 
 import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.*;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 public class Loan {
     public static final String TABLE_NAME = "loan";
-
+    private final static Database database = new Database();
     private UUID idLoan;
     private UUID idBook;
     private UUID idCopy;
@@ -144,6 +150,48 @@ public class Loan {
 
         session.execute(createTable.build());
         System.out.println("Table '"+TABLE_NAME+"' created successfully.");
+    }
+
+    public static void insertFromJSON(String filepath){
+
+        try (CqlSession session = database.getSession()){
+            JSONArray jsonArray = Converter.getJSONFromFile(filepath);
+            int count = 0;
+            // Iterate through JSON array and insert into ScyllaDB
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+
+                UUID idReader = Converter.intToUUID(jsonObject.getInt("id_reader"), TABLE_NAME);
+                String firstname = jsonObject.getString("firstname");
+                String lastname = jsonObject.getString("lastname");
+                Instant birthDate = Converter.stringToDate(jsonObject.getString("birth_date"));
+                String street = jsonObject.getString("street");
+                String city = jsonObject.getString("city");
+                String postalCode;
+                try {
+                    postalCode = jsonObject.getString("postal_code");
+                } catch (Exception e) {
+                    postalCode = "00000";
+                }
+                String email = jsonObject.getString("email");
+                String phoneNb = jsonObject.getString("phone_nb");
+
+                String insertQuery = "INSERT INTO "+TABLE_NAME+" (id_reader, firstname, lastname, birth_date, street, city, postal_code, email, phone_nb) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                // Insert into ScyllaDB
+                ResultSet result = session.execute(
+                        insertQuery,
+                        idReader, firstname, lastname, birthDate, street, city, postalCode, email, phoneNb);
+                if(result.wasApplied())
+                {
+                    count++;
+                }
+            }
+            System.out.println(TABLE_NAME + " : " + count + "/"+ jsonArray.length() +" imported !");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
 

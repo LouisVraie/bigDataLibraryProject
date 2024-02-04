@@ -20,7 +20,9 @@ public interface CRUD<T> {
         // Implémentation de la méthode insert
     }
     static <T> void insert(ArrayList<T> entityList) {
-        // Implémentation de la méthode insert
+        for (T entity : entityList) {
+            insert(entity);
+        }
     }
 
     static <T> void update(UUID id, T entity) {

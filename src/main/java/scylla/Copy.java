@@ -10,6 +10,7 @@ import java.util.UUID;
 
 public class Copy {
     public static final String TABLE_NAME = "copy";
+    private final static Database database = new Database();
     private UUID idCopy;
     private UUID idBook;
     private String title;
