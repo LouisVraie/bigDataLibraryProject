@@ -18,7 +18,7 @@ public class Library {
             Book book = new Book(database);
 
             // Group by categories, looking for books in the "Drama" category
-            Document groupByCategoriesFilter = new Document("categories", "Drama");
+            Document groupByCategoriesFilter = new Document();
             book.group_by_categories(groupByCategoriesFilter);
 
             // Copy number for the book titled "Heaven"
@@ -35,7 +35,7 @@ public class Library {
 
             // Most read author among all books, top 5
             Document mostReadAuthorFilter = new Document(); // No specific filter, we want the top 5 among all books
-            book.most_read_author(5);
+            book.most_read_author(mostReadAuthorFilter, 5);
 
             // Loan information for the book "Heaven"
             Document loanInformationFilter = new Document("title", "Heaven");
@@ -43,7 +43,7 @@ public class Library {
 
             // Loan trends, assuming top 5
             Document loanTrendsFilter = new Document(); // No specific filter for trends, assuming top 5
-            book.loan_trends(5);
+            book.loan_trends(loanTrendsFilter, 5);
 
             // Instantiate the Reader class
             Reader reader = new Reader(database);

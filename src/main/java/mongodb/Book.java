@@ -1,13 +1,14 @@
 package mongodb;
 
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.*;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class Book extends MongoDBCollection {
 
@@ -70,47 +71,68 @@ public class Book extends MongoDBCollection {
     // Methods requiring cross-collection data or more complex data relationships
     // Conceptual approaches provided; actual implementation would depend on specific application logic and data model
 
-    public void most_read_author(int number) {
+    public void most_read_author(Document mostReadAuthorFilter, int number) {
         System.out.println(" \n\n\n #### Most read author ################################");
-        // Stage 1: Unwind the loans array from the readers collection
-        Bson unwindLoans = Aggregates.unwind("$loans");
 
-        // Stage 2: Group by the copy_id to count the number of times each copy has been loaned
-        Bson groupByCopyId = Aggregates.group("$loans.copy_id", Accumulators.sum("count", 1));
+        // Step 1: Count loans per copy from the readers collection
+        MongoCollection<Document> readersCollection = database.getCollection("readers");
+        Map<String, Long> copyLoanCount = new HashMap<>();
+        readersCollection.find(mostReadAuthorFilter).forEach((Consumer<Document>) reader -> {
+            List<Document> loans = reader.getList("loans", Document.class, Collections.emptyList());
+            for (Document loan : loans) {
+                String copyId = loan.getString("copy_id");
+                copyLoanCount.put(copyId, copyLoanCount.getOrDefault(copyId, 0L) + 1);
+            }
+        });
 
-        // Stage 3: Look up the corresponding book documents from the book collection based on copy_id
-        Bson lookupBooks = Aggregates.lookup("book", "_id", "editions.copies.copy_id", "book_docs");
+        // Step 2: Aggregate loans per book based on copy counts
+        Map<String, Long> bookLoanCount = new HashMap<>();
+        collection.find().forEach((Consumer<Document>) book -> {
+            List<Document> editions = book.getList("editions", Document.class, Collections.emptyList());
+            for (Document edition : editions) {
+                List<Document> copies = edition.getList("copies", Document.class, Collections.emptyList());
+                for (Document copy : copies) {
+                    // Handle copy_id as Integer if stored as such
+                    Object copyIdObj = copy.get("copy_id");
+                    String copyId;
+                    if (copyIdObj instanceof Integer) {
+                        // Convert Integer to String
+                        copyId = String.valueOf(copyIdObj);
+                    } else if (copyIdObj instanceof String) {
+                        // Use as is if already a String
+                        copyId = (String) copyIdObj;
+                    } else {
+                        // Skip or handle other unexpected types appropriately
+                        continue;
+                    }
+                    Long loans = copyLoanCount.getOrDefault(copyId, 0L);
+                    String title = book.getString("title");
+                    bookLoanCount.put(title, bookLoanCount.getOrDefault(title, 0L) + loans);
+                }
+            }
+        });
 
-        // Stage 4: Unwind the resulting book_docs array
-        Bson unwindBooks = Aggregates.unwind("$book_docs");
 
-        // Stage 5: Unwind the authors array from the book documents
-        Bson unwindAuthors = Aggregates.unwind("$book_docs.authors");
 
-        // Stage 6: Group by author_id to count the total number of books loaned per author
-        Bson groupByAuthor = Aggregates.group("$book_docs.authors.id_author", Accumulators.sum("total_loans", "$count"));
+        // Step 3: Identify the most read authors based on top 'number' of books
+        List<Map.Entry<String, Long>> topBooks = bookLoanCount.entrySet().stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                .limit(number)
+                .collect(Collectors.toList());
 
-        // Stage 7: Sort the results by total_loans in descending order
-        Bson sortByTotalLoans = Aggregates.sortByCount("$total_loans");
+        for (Map.Entry<String, Long> entry : topBooks) {
+            String title = entry.getKey();
+            collection.find(new Document("title", title)).forEach((Consumer<Document>) book -> {
+                // Assuming each book document contains an 'authors' array of documents
+                List<Document> authors = book.getList("authors", Document.class, Collections.emptyList());
+                // Creating a string representation of all authors
+                String authorsStr = authors.stream()
+                        .map(author -> author.getString("firstname") + " " + author.getString("lastname"))
+                        .collect(Collectors.joining(", "));
+                System.out.println("Book: " + title + ", Authors: " + authorsStr);
+            });
+        }
 
-        // Stage 8: Limit the results to the specified number
-        Bson limitToTopN = Aggregates.limit(number);
-
-        // Combine all stages into a pipeline
-        List<Bson> pipeline = Arrays.asList(
-                unwindLoans,
-                groupByCopyId,
-                lookupBooks,
-                unwindBooks,
-                unwindAuthors,
-                groupByAuthor,
-                sortByTotalLoans,
-                limitToTopN
-        );
-
-        // Run the aggregation pipeline against the readers collection
-        MongoDatabase database = this.database;
-        database.getCollection("readers").aggregate(pipeline).forEach(printDocument());
     }
 
     // Helper method to print documents
@@ -128,39 +150,41 @@ public class Book extends MongoDBCollection {
         this.collection.aggregate(pipeline).forEach(printDocument());
     }
 
-    public void loan_trends(int number) {
+    public void loan_trends(Document whereQuery, int number) {
         System.out.println(" \n\n\n #### Loan trends ################################");
-        // Stage 1: Unwind the loans array from the readers collection
-        Bson unwindLoans = Aggregates.unwind("$loans");
 
-        // Stage 2: Group by the book's copy_id to count the number of times each book has been loaned
-        Bson groupByCopyId = Aggregates.group("$loans.copy_id", Accumulators.sum("loanCount", 1));
+        // Étape 1 : Comptage des emprunts par copie
+        MongoCollection<Document> readersCollection = database.getCollection("readers");
+        Map<String, Long> copyLoanCount = new HashMap<>();
+        readersCollection.find(whereQuery).forEach((Consumer<Document>) reader -> {
+            List<Document> loans = reader.getList("loans", Document.class, Collections.emptyList());
+            for (Document loan : loans) {
+                String copyId = String.valueOf(loan.get("copy_id"));
+                copyLoanCount.merge(copyId, 1L, Long::sum);
+            }
+        });
 
-        // Stage 3: Sort by loanCount in descending order to find the most loaned books
-        Bson sortByLoanCount = Aggregates.sort(new Document("loanCount", -1));
+        // Étape 2 : Aggrégation des emprunts par livre
+        Map<String, Long> bookLoanCount = new HashMap<>();
+        collection.find(new Document("_id", new Document("$in", new ArrayList<>(copyLoanCount.keySet()))))
+                .forEach((Consumer<Document>) book -> {
+                    long bookLoans = book.getList("editions", Document.class, Collections.emptyList()).stream()
+                            .flatMap(edition -> ((List<Document>) edition.get("copies")).stream())
+                            .filter(copy -> copyLoanCount.containsKey(String.valueOf(copy.get("copy_id"))))
+                            .mapToLong(copy -> copyLoanCount.get(String.valueOf(copy.get("copy_id"))))
+                            .sum();
 
-        // Stage 4: Limit the results to the top 'number' of loaned books
-        Bson limitToTopN = Aggregates.limit(number);
+                    if (bookLoans > 0) {
+                        String title = book.getString("title");
+                        bookLoanCount.put(title, bookLoanCount.getOrDefault(title, 0L) + bookLoans);
+                    }
+                });
 
-        // Stage 5: Look up the corresponding book documents from the book collection based on copy_id
-        Bson lookupBooks = Aggregates.lookup("book", "_id", "editions.copies.copy_id", "book_docs");
-
-        // Stage 6: Unwind the resulting book_docs array (since lookup produces an array of matches)
-        Bson unwindBooks = Aggregates.unwind("$book_docs");
-
-        // Combine all stages into a pipeline
-        List<Bson> pipeline = Arrays.asList(
-                unwindLoans,
-                groupByCopyId,
-                sortByLoanCount,
-                limitToTopN,
-                lookupBooks,
-                unwindBooks
-        );
-
-        // Execute the pipeline against the 'readers' collection to get the loan trends
-        MongoDatabase database = this.database;
-        database.getCollection("readers").aggregate(pipeline).forEach(printDocument());
+        // Étape 3 : Sélection et affichage des "n" livres les plus empruntés
+        bookLoanCount.entrySet().stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                .limit(number)
+                .forEach(entry -> System.out.println("Book: " + entry.getKey() + ", Loans: " + entry.getValue()));
     }
 
 }
