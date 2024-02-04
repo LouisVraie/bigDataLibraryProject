@@ -26,12 +26,19 @@ public class Main {
         String currentDirectory = System.getProperty("user.dir");
         System.out.println("Répertoire de travail actuel : " + currentDirectory);
 
+<<<<<<< HEAD
         Reader reader = new Reader(UUID.randomUUID(), "John", "Doe", "1990-01-01", "1234 Main St", "Anytown", "12345", "john.doe@example.com", "123-456-7890");
         Reader.insert(reader);
 
         Reader.insertFromJSON(Main.class.getClassLoader().getResource("import/readerscylladb.json").getFile());
         // Book book = new Book(UUID.randomUUID(), "The Hobbit", 1937, "The Hobbit is a children's fantasy novel by English author J. R. R. Tolkien.", Set.of("Fantasy"), Set.of(new Author("J. R. R.", "Tolkien")));
         // Book.insert(book);
+=======
+        // Reader reader = new Reader(UUID.randomUUID(), "John", "Doe", "1990-01-01", "1234 Main St", "Anytown", "12345", "john.doe@example.com", "123-456-7890");
+        // Reader.insert(reader);
+        Book book = new Book(UUID.randomUUID(), "The Hobbit", 1937, "The Hobbit is a children's fantasy novel by English author J. R. R. Tolkien.", Set.of("Fantasy"), Set.of(new Author("J. R. R.", "Tolkien")));
+        Book.insert(book);
+>>>>>>> scyllaBranchFromLouis
     }
 
     public static void test(){
