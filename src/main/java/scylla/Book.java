@@ -10,7 +10,6 @@ import com.datastax.oss.driver.api.querybuilder.schema.CreateTable;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.*;
 
 import com.datastax.oss.driver.api.querybuilder.term.Term;
-import scylla.codec.AuthorCodec;
 import scylla.type.Author;
 
 import java.util.*;

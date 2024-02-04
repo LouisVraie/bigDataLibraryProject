@@ -3,7 +3,6 @@ package scylla;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.type.codec.registry.MutableCodecRegistry;
 import com.datastax.oss.driver.api.querybuilder.schema.CreateKeyspace;
-import scylla.codec.AuthorCodec;
 import scylla.type.Author;
 
 import java.net.InetSocketAddress;
@@ -18,10 +17,6 @@ public class Database {
      */
     private void createTypes(CqlSession session){
         Author.createType(session);
-
-        // Save the codec
-        MutableCodecRegistry registry = ((MutableCodecRegistry) session.getContext().getCodecRegistry());
-        registry.register(new AuthorCodec());
     }
 
     /**
