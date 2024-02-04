@@ -13,12 +13,15 @@ public class Database {
     public static final String KEYSPACE = "library";
 
     /**
-     * Create types
+     * Drop tables
      */
-    private void createTypes(CqlSession session){
-        Author.createType(session);
+    private void dropTables(CqlSession session){
+        // Drop tables
+        Reader.dropTable(session);
+        Book.dropTable(session);
+        Copy.dropTable(session);
+        Loan.dropTable(session);
     }
-
     /**
      * Create tables
      */
@@ -36,7 +39,7 @@ public class Database {
     public void createDatabase()
     {
         try (CqlSession session = getSession()) {
-            createTypes(session);
+            dropTables(session);
             createTables(session);
         } catch (Exception e) {
             System.out.println("ERROR ! The database wasn't created !");

@@ -21,7 +21,7 @@ import java.util.UUID;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class Loan {
+public class Loan implements CRUD<Loan>, TableOperation {
     public static final String TABLE_NAME = "loan";
     private final static Database database = new Database();
     private UUID idLoan;
@@ -155,18 +155,22 @@ public class Loan {
         System.out.println("Table '"+TABLE_NAME+"' created successfully.");
     }
 
+    public static void dropTable(CqlSession session){
+        ResultSet result = session.execute(SchemaBuilder.dropTable(TABLE_NAME).ifExists().build());
+        
+        if(result.wasApplied()){
+            System.out.println("Table '"+TABLE_NAME+"' dropped successfully.");
+        }
+    }
+    
     public static void insertFromJSON(String filepath){
 
         try (CqlSession session = database.getSession()){
-            BufferedReader reader = new BufferedReader(new FileReader(filepath));
-
+            JSONArray jsonArray = Converter.getJSONFromFile(filepath);
             int count = 0;
-            String line;
-
-            // Read JSON data from file line by line
-            while ((line = reader.readLine()) != null) {
- 
-                JSONObject jsonObject = new JSONObject(Converter.clearLine(line));
+            // Iterate through JSON array and insert into ScyllaDB
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
 
                 UUID idLoan = Converter.intToUUID(jsonObject.getInt("id_loan"), Loan.TABLE_NAME);
                 UUID idBook = Converter.intToUUID(jsonObject.getInt("id_book"), Book.TABLE_NAME);
@@ -192,7 +196,7 @@ public class Loan {
                     count++;
                 }
             }
-            System.out.println(TABLE_NAME + " : " + count + " records imported !");
+            System.out.println(TABLE_NAME + " : " + count + "/" + jsonArray.length() + " record(s) imported !");
         } catch (Exception e) {
             e.printStackTrace();
         }

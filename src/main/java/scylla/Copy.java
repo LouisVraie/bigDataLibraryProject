@@ -1,14 +1,23 @@
 package scylla;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.querybuilder.SchemaBuilder;
 import com.datastax.oss.driver.api.querybuilder.schema.CreateTable;
+
+import scylla.utils.Converter;
+
 import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.*;
 
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
-public class Copy {
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+public class Copy implements CRUD<Copy>, TableOperation {
     public static final String TABLE_NAME = "copy";
     private final static Database database = new Database();
     private UUID idCopy;
@@ -85,6 +94,47 @@ public class Copy {
 
         session.execute(createTable.build());
         System.out.println("Table '"+TABLE_NAME+"' created successfully.");
+    }
+
+    public static void dropTable(CqlSession session){
+        ResultSet result = session.execute(SchemaBuilder.dropTable(TABLE_NAME).ifExists().build());
+        
+        if(result.wasApplied()){
+            System.out.println("Table '"+TABLE_NAME+"' dropped successfully.");
+        }
+    }
+    
+    public static void insertFromJSON(String filepath){
+        try (CqlSession session = database.getSession()){
+            JSONArray jsonArray = Converter.getJSONFromFile(filepath);
+            int count = 0;
+            // Iterate through JSON array and insert into ScyllaDB
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+
+                UUID idCopy = Converter.intToUUID(jsonObject.getInt("id_copy"), Copy.TABLE_NAME);
+                UUID idBook = Converter.intToUUID(jsonObject.getInt("id_book"), Book.TABLE_NAME);
+                String title = jsonObject.getString("title");
+                String editionName = jsonObject.getString("edition_name");
+                Boolean state = jsonObject.getBoolean("state");
+                String wear = jsonObject.getString("wear");
+
+                String insertQuery = "INSERT INTO "+Copy.TABLE_NAME+" (id_copy, id_book, title, edition_name, state, wear) " +
+                        "VALUES (?, ?, ?, ?, ?, ?) IF NOT EXISTS";
+                // Insert into ScyllaDB
+                ResultSet result = session.execute(
+                        insertQuery,
+                        idCopy, idBook, title, editionName, state, wear);
+                if(result.wasApplied())
+                {
+                    count++;
+                }
+            }
+            System.out.println(TABLE_NAME + " : " + count + "/"+ jsonArray.length() +" record(s) imported !");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
 

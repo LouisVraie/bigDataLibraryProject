@@ -1,7 +1,6 @@
 package scylla;
 
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.querybuilder.*;
@@ -9,13 +8,15 @@ import com.datastax.oss.driver.api.querybuilder.insert.Insert;
 import com.datastax.oss.driver.api.querybuilder.schema.CreateTable;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.*;
 
-import com.datastax.oss.driver.api.querybuilder.term.Term;
 import scylla.type.Author;
+import scylla.utils.Converter;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
-public class Book implements CRUD<Book> {
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+public class Book implements CRUD<Book>, TableOperation{
     public static final String TABLE_NAME = "book";
     private final static Database database = new Database();
     private UUID idBook;
@@ -43,7 +44,7 @@ public class Book implements CRUD<Book> {
         CreateTable createTable = SchemaBuilder.createTable(TABLE_NAME).ifNotExists()
             .withPartitionKey("id_book", DataTypes.UUID)
             .withColumn("title", DataTypes.TEXT)
-            .withColumn("year", DataTypes.DOUBLE)
+            .withColumn("year", DataTypes.INT)
             .withColumn("summary", DataTypes.TEXT)
             .withColumn("categories", DataTypes.setOf(DataTypes.TEXT))
             // .withColumn("authors", DataTypes.setOf(SchemaBuilder.udt(Author.TYPE_NAME, true)));
@@ -51,6 +52,48 @@ public class Book implements CRUD<Book> {
 
         session.execute(createTable.build());
         System.out.println("Table '"+TABLE_NAME+"' created successfully.");
+    }
+
+    public static void dropTable(CqlSession session){
+        ResultSet result = session.execute(SchemaBuilder.dropTable(TABLE_NAME).ifExists().build());
+        
+        if(result.wasApplied()){
+            System.out.println("Table '"+TABLE_NAME+"' dropped successfully.");
+        }
+    }
+
+    public static void insertFromJSON(String filepath){
+
+        try (CqlSession session = database.getSession()){
+            JSONArray jsonArray = Converter.getJSONFromFile(filepath);
+            int count = 0;
+            // Iterate through JSON array and insert into ScyllaDB
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+
+                UUID idBook = Converter.intToUUID(jsonObject.getInt("id_book"), Book.TABLE_NAME);
+                String title = jsonObject.getString("title");
+                Integer year = jsonObject.getInt("year");
+                String summary = jsonObject.getString("summary");
+                Set<Map<String, String>> authors = Converter.stringToAuthors(jsonObject.getString("authors"));
+                Set<String> categories = Converter.stringToSet(jsonObject.getString("categories"));
+
+                String insertQuery = "INSERT INTO "+Book.TABLE_NAME+" (id_book, title, year, summary, authors, categories) " +
+                        "VALUES (?, ?, ?, ?, ?, ?) IF NOT EXISTS";
+                // Insert into ScyllaDB
+                ResultSet result = session.execute(
+                        insertQuery,
+                        idBook, title, year, summary, authors, categories);
+                if(result.wasApplied())
+                {
+                    count++;
+                }
+            }
+            System.out.println(TABLE_NAME + " : " + count + "/"+ jsonArray.length() +" record(s) imported !");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     // Getters et Setters
     public UUID getIdBook() {

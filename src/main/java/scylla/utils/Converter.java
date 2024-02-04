@@ -110,6 +110,24 @@ public class Converter {
         return authorSet;
     }
 
+    public static Set<String> stringToSet(String key) {
+
+        Set<String> stringSet = new HashSet<>();
+
+        try {
+            JSONArray jsonArray = new JSONArray(key);
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                String value = jsonArray.getString(i);
+                stringSet.add(value);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return stringSet;
+    }
+
     public static String clearLine(String line) {
         // if the line start with a [ 
         if (line.startsWith("[")) {

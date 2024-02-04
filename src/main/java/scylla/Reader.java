@@ -22,7 +22,7 @@ import java.util.UUID;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal;
 
-public class Reader implements CRUD<Reader>{
+public class Reader implements CRUD<Reader>, TableOperation{
 
     public static final String TABLE_NAME = "reader";
     private final static Database database = new Database();
@@ -147,6 +147,14 @@ public class Reader implements CRUD<Reader>{
         System.out.println("Table '" + TABLE_NAME + "' created successfully.");
     }
 
+    public static void dropTable(CqlSession session){
+        ResultSet result = session.execute(SchemaBuilder.dropTable(TABLE_NAME).ifExists().build());
+        
+        if(result.wasApplied()){
+            System.out.println("Table '"+TABLE_NAME+"' dropped successfully.");
+        }
+    }
+
     public static void insertFromJSON(String filepath){
 
         try (CqlSession session = database.getSession()){
@@ -182,7 +190,7 @@ public class Reader implements CRUD<Reader>{
                     count++;
                 }
             }
-            System.out.println(TABLE_NAME + " : " + count + "/"+ jsonArray.length() +" imported !");
+            System.out.println(TABLE_NAME + " : " + count + "/"+ jsonArray.length() +" record(s) imported !");
 
         } catch (Exception e) {
             e.printStackTrace();
