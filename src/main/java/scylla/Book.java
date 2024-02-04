@@ -2,12 +2,15 @@ package scylla;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.querybuilder.*;
 import com.datastax.oss.driver.api.querybuilder.insert.Insert;
 import com.datastax.oss.driver.api.querybuilder.schema.CreateTable;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.*;
 
+import com.datastax.oss.driver.api.querybuilder.select.Select;
 import scylla.type.Author;
 import scylla.utils.Converter;
 
@@ -197,5 +200,81 @@ public class Book implements CRUD<Book>, TableOperation{
 
     public void delete(UUID id){
 
+    }
+
+    public static Book toBook(Row row){
+        Set<String> categories = (Set<String>) row.getObject("categories");
+        Set<Map<String, String>> authors1 = (Set<Map<String, String>>) row.getObject("authors");
+
+        Set<Author> authors = null;
+
+        for (Map<String, String> a : authors1) {
+            authors.add(Author.toAuthor(a));
+        }
+
+        return new Book(
+            row.getUuid("id_book"),
+            row.getString("title"),
+            row.getInt("year"),
+            row.getString("summary"),
+            categories,
+            authors
+        );
+    }
+
+
+    public void groupByCategories(String category) {
+        try (CqlSession session = database.getSession()) {
+            Select query = selectFrom(Book.TABLE_NAME).all()
+                    .whereColumn("category").isEqualTo(QueryBuilder.literal(category))
+                    .allowFiltering();
+
+            SimpleStatement statement = query.build();
+            ResultSet rs = session.execute(statement);
+            Row row = rs.one();
+        }
+    }
+
+    public void groupByAuthors(Author category) {
+        try (CqlSession session = database.getSession()) {
+            Select query = selectFrom(Book.TABLE_NAME).all()
+                    .whereColumn("author").isEqualTo(QueryBuilder.literal(category))
+                    .allowFiltering();
+
+            SimpleStatement statement = query.build();
+            ResultSet rs = session.execute(statement);
+            Row row = rs.one();
+        }
+    }
+
+    public void searchByName() {
+        try (CqlSession session = database.getSession()) {
+            Select query = selectFrom(Book.TABLE_NAME).all();
+
+            SimpleStatement statement = query.build();
+            ResultSet rs = session.execute(statement);
+            Row row = rs.one();
+        }
+    }
+
+
+    public static Set<Book> searchByName(String name) {
+
+        Set<Book> books = new HashSet<>();
+
+        try (CqlSession session = database.getSession()) {
+            Select query = selectFrom(Book.TABLE_NAME).all()
+                    .whereColumn("title").isEqualTo(QueryBuilder.literal(name))
+                    .allowFiltering();
+
+            SimpleStatement statement = query.build();
+            ResultSet rs = session.execute(statement);
+
+            for (Row row : rs) {
+                books.add(Book.toBook(row));
+            }
+
+        }
+        return books;
     }
 }
