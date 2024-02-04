@@ -1,18 +1,25 @@
 package scylla;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.querybuilder.*;
+import com.datastax.oss.driver.api.querybuilder.insert.Insert;
 import com.datastax.oss.driver.api.querybuilder.schema.CreateTable;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.*;
+
+import com.datastax.oss.driver.api.querybuilder.term.Term;
+import scylla.codec.AuthorCodec;
 import scylla.type.Author;
 
 import java.util.Set;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-public class Book {
+public class Book implements CRUD<Book> {
     public static final String TABLE_NAME = "book";
+    private final static Database database = new Database();
     private UUID idBook;
     private String title;
     private int year;
@@ -106,5 +113,38 @@ public class Book {
                 ", categories=" + categories +
                 ", authors=" + authors +
                 '}';
+    }
+
+    public Book get(UUID id){
+        return null;
+    }
+
+    public List<Book> getAll(){
+        return null;
+    }
+
+    public static void insert(Book book){
+        try (CqlSession session = database.getSession()){
+
+            Insert insert = insertInto(Book.TABLE_NAME)
+                .value("id_book", literal(book.getIdBook()))
+                .value("title", literal(book.getTitle()))
+                .value("year", literal(book.getYear()))
+                .value("summary", literal(book.getSummary()))
+                .value("categories", literal(book.getCategories()))
+                .value("authors", literal(book.getAuthors(), Author.AUTHOR_SET_CODEC));
+
+            ResultSet result = session.execute(insert.ifNotExists().build());
+
+            System.out.println("Book inserted ? "+ result.wasApplied());
+        }
+    }
+
+    public void update(UUID id, Book entity){
+
+    }
+
+    public void delete(UUID id){
+
     }
 }

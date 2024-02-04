@@ -7,8 +7,12 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 import com.datastax.oss.driver.api.querybuilder.insert.InsertInto;
 import com.datastax.oss.driver.api.querybuilder.select.Select;
+import scylla.type.Author;
 
 // For DML queries, such as SELECT
+import java.util.Set;
+import java.util.UUID;
+
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.*;
 
 // For DDL queries, such as CREATE TABLE
@@ -19,6 +23,11 @@ public class Main {
 
     public static void main(String[] args) {
         database.createDatabase();
+
+        Reader reader = new Reader(UUID.randomUUID(), "John", "Doe", "1990-01-01", "1234 Main St", "Anytown", "12345", "john.doe@example.com", "123-456-7890");
+        Reader.insert(reader);
+        // Book book = new Book(UUID.randomUUID(), "The Hobbit", 1937, "The Hobbit is a children's fantasy novel by English author J. R. R. Tolkien.", Set.of("Fantasy"), Set.of(new Author("J. R. R.", "Tolkien")));
+        // Book.insert(book);
     }
 
     public static void test(){

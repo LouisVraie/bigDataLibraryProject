@@ -1,24 +1,27 @@
 package scylla;
 
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.core.type.codec.registry.MutableCodecRegistry;
 import com.datastax.oss.driver.api.querybuilder.schema.CreateKeyspace;
-import com.datastax.oss.driver.api.querybuilder.schema.CreateType;
+import scylla.codec.AuthorCodec;
 import scylla.type.Author;
 
 import java.net.InetSocketAddress;
 
 import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.createKeyspace;
-import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.createType;
 
 public class Database {
-    public String keyspace = "library";
+    public static final String KEYSPACE = "library";
 
     /**
      * Create types
      */
     private void createTypes(CqlSession session){
         Author.createType(session);
+
+        // Save the codec
+        MutableCodecRegistry registry = ((MutableCodecRegistry) session.getContext().getCodecRegistry());
+        registry.register(new AuthorCodec());
     }
 
     /**
@@ -53,11 +56,11 @@ public class Database {
     public CqlSession getSession(){
         CqlSession session = null;
         try {
-            session = CqlSession.builder().withKeyspace(keyspace).build();
+            session = CqlSession.builder().withKeyspace(KEYSPACE).build();
         } catch (Exception e) {
             System.out.println("Keyspace doesn't exist. Creating keyspace...");
             createKeyspaceIfNotExists();
-            session = CqlSession.builder().withKeyspace(keyspace).build();
+            session = CqlSession.builder().withKeyspace(KEYSPACE).build();
         }
         return session;
     }
@@ -67,7 +70,7 @@ public class Database {
      */
     public void createKeyspaceIfNotExists() {
         try (CqlSession session = CqlSession.builder().build()) {
-            CreateKeyspace createKeyspace = createKeyspace(keyspace).ifNotExists().withSimpleStrategy(3);
+            CreateKeyspace createKeyspace = createKeyspace(KEYSPACE).ifNotExists().withSimpleStrategy(3);
             session.execute(createKeyspace.build());
             System.out.println("Keyspace created successfully.");
         } catch (Exception e) {
