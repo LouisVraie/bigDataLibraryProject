@@ -30,6 +30,7 @@ public class Main {
         Reader.insert(reader);
 
         Reader.insertFromJSON(Main.class.getClassLoader().getResource("import/readerscylladb.json").getFile());
+        Loan.insertFromJSON(Main.class.getClassLoader().getResource("import/loanscylladb.json").getFile());
         // Book book = new Book(UUID.randomUUID(), "The Hobbit", 1937, "The Hobbit is a children's fantasy novel by English author J. R. R. Tolkien.", Set.of("Fantasy"), Set.of(new Author("J. R. R.", "Tolkien")));
         // Book.insert(book);
     }

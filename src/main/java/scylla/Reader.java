@@ -24,7 +24,7 @@ import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal;
 
 public class Reader implements CRUD<Reader>{
 
-    private static final String TABLE_NAME = "reader";
+    public static final String TABLE_NAME = "reader";
     private final static Database database = new Database();
     private UUID idReader;
     private String firstname;
@@ -172,7 +172,7 @@ public class Reader implements CRUD<Reader>{
                 String phoneNb = jsonObject.getString("phone_nb");
 
                 String insertQuery = "INSERT INTO "+Reader.TABLE_NAME+" (id_reader, firstname, lastname, birth_date, street, city, postal_code, email, phone_nb) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) IF NOT EXISTS";
                 // Insert into ScyllaDB
                 ResultSet result = session.execute(
                         insertQuery,

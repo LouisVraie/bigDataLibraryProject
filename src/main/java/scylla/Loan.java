@@ -10,8 +10,11 @@ import scylla.utils.Converter;
 
 import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.*;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.time.Instant;
 import java.util.Date;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -143,7 +146,7 @@ public class Loan {
                 .withColumn("firstname", DataTypes.TEXT)
                 .withColumn("lastname", DataTypes.TEXT)
                 .withColumn("title", DataTypes.TEXT)
-                .withColumn("authors", DataTypes.setOf(SchemaBuilder.udt(Author.TYPE_NAME, true)))
+                .withColumn("authors",DataTypes.setOf(DataTypes.mapOf(DataTypes.TEXT, DataTypes.TEXT, true)))
                 .withColumn("loan_date", DataTypes.TIMESTAMP)
                 .withColumn("expiry_date", DataTypes.TIMESTAMP)
                 .withColumn("due_date", DataTypes.TIMESTAMP);
@@ -155,40 +158,41 @@ public class Loan {
     public static void insertFromJSON(String filepath){
 
         try (CqlSession session = database.getSession()){
-            JSONArray jsonArray = Converter.getJSONFromFile(filepath);
-            int count = 0;
-            // Iterate through JSON array and insert into ScyllaDB
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
+            BufferedReader reader = new BufferedReader(new FileReader(filepath));
 
-                UUID idReader = Converter.intToUUID(jsonObject.getInt("id_reader"), TABLE_NAME);
+            int count = 0;
+            String line;
+
+            // Read JSON data from file line by line
+            while ((line = reader.readLine()) != null) {
+ 
+                JSONObject jsonObject = new JSONObject(Converter.clearLine(line));
+
+                UUID idLoan = Converter.intToUUID(jsonObject.getInt("id_loan"), Loan.TABLE_NAME);
+                UUID idBook = Converter.intToUUID(jsonObject.getInt("id_book"), Book.TABLE_NAME);
+                UUID idCopy = Converter.intToUUID(jsonObject.getInt("id_copy"), Copy.TABLE_NAME);
+                UUID idReader = Converter.intToUUID(jsonObject.getInt("id_reader"), Reader.TABLE_NAME);
                 String firstname = jsonObject.getString("firstname");
                 String lastname = jsonObject.getString("lastname");
-                Instant birthDate = Converter.stringToDate(jsonObject.getString("birth_date"));
-                String street = jsonObject.getString("street");
-                String city = jsonObject.getString("city");
-                String postalCode;
-                try {
-                    postalCode = jsonObject.getString("postal_code");
-                } catch (Exception e) {
-                    postalCode = "00000";
-                }
-                String email = jsonObject.getString("email");
-                String phoneNb = jsonObject.getString("phone_nb");
+                String title = jsonObject.getString("title");
+                Set<Map<String, String>> authors = Converter.stringToAuthors(jsonObject.getString("authors"));
+                Instant loanDate = Converter.stringToDate(jsonObject.getString("loan_date"));
+                Instant expiryDate = Converter.stringToDate(jsonObject.getString("expiry_date"));
+                Instant dueDate = Converter.stringToDate(jsonObject.getString("due_date"));
 
-                String insertQuery = "INSERT INTO "+TABLE_NAME+" (id_reader, firstname, lastname, birth_date, street, city, postal_code, email, phone_nb) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                String insertQuery = "INSERT INTO "+TABLE_NAME+" (id_loan, id_book, id_copy, id_reader, firstname, lastname, title, authors, loan_date, expiry_date, due_date) " +
+                                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) IF NOT EXISTS";
+
                 // Insert into ScyllaDB
-                ResultSet result = session.execute(
-                        insertQuery,
-                        idReader, firstname, lastname, birthDate, street, city, postalCode, email, phoneNb);
-                if(result.wasApplied())
-                {
+                ResultSet result = session.execute(insertQuery,
+                    idLoan, idBook, idCopy, idReader, firstname, lastname, title,
+                    authors, loanDate, expiryDate, dueDate);
+
+                if (result.wasApplied()) {
                     count++;
                 }
             }
-            System.out.println(TABLE_NAME + " : " + count + "/"+ jsonArray.length() +" imported !");
-
+            System.out.println(TABLE_NAME + " : " + count + " records imported !");
         } catch (Exception e) {
             e.printStackTrace();
         }
