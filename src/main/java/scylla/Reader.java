@@ -3,6 +3,7 @@ package scylla;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.metadata.schema.ClusteringOrder;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
@@ -18,11 +19,7 @@ import org.json.JSONObject;
 import scylla.utils.Converter;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.*;
 
@@ -398,4 +395,44 @@ public class Reader implements CRUD<Reader>, TableOperation{
             e.printStackTrace();
         }
     }
+
+    public static Set<Reader> groupByCity(String city) {
+        System.out.println(TABLE_NAME + " : groupByCity");
+        Set<Reader> readers = new HashSet<>();
+
+        try (CqlSession session = database.getSession()) {
+            Select query = selectFrom(Book.TABLE_NAME).all()
+                    .whereColumn("city").isEqualTo(QueryBuilder.literal(city))
+                    .allowFiltering();
+
+            SimpleStatement statement = query.build();
+            ResultSet rs = session.execute(statement);
+
+            for (Row row : rs) {
+                readers.add(Reader.buildReaderFromRow(row));
+            }
+        }
+        return readers;
+    }
+
+    public static Set<Reader> searchByName(String firstname, String lastname) {
+        System.out.println(TABLE_NAME + " : searchByName");
+        Set<Reader> readers = new HashSet<>();
+
+        try (CqlSession session = database.getSession()) {
+            Select query = selectFrom(Book.TABLE_NAME).all()
+                    .whereColumn("firstname").isEqualTo(QueryBuilder.literal(firstname))
+                    .whereColumn("lastname").isEqualTo(QueryBuilder.literal(lastname))
+                    .allowFiltering();
+
+            SimpleStatement statement = query.build();
+            ResultSet rs = session.execute(statement);
+
+            for (Row row : rs) {
+                readers.add(Reader.buildReaderFromRow(row));
+            }
+        }
+        return readers;
+    }
+
 }
