@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e9770e5c-4b6c-4b16-85b2-df427e2f0bb4" name="Changes" comment="idk why but push">
+    <list default="true" id="e9770e5c-4b6c-4b16-85b2-df427e2f0bb4" name="Changes" comment="implemented book and reader">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/mongodb/Book.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/mongodb/Book.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/mongodb/Library.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/mongodb/Library.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/mongodb/Reader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/mongodb/Reader.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -78,6 +78,15 @@
       <workItem from="1706969927858" duration="8181000" />
       <workItem from="1707053133388" duration="3333000" />
     </task>
+    <task id="LOCAL-00001" summary="implemented book and reader">
+      <option name="closed" value="true" />
+      <created>1707065533194</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1707065533194</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -96,6 +105,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="idk why but push" />
-    <option name="LAST_COMMIT_MESSAGE" value="idk why but push" />
+    <MESSAGE value="implemented book and reader" />
+    <option name="LAST_COMMIT_MESSAGE" value="implemented book and reader" />
   </component>
 </project>

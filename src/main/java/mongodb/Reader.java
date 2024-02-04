@@ -20,6 +20,22 @@ public class Reader extends MongoDBCollection {
         this.collection = database.getCollection(collectionName);
     }
 
+    public void loan_count_by_reader(Document filters){
+        System.out.println(" \n\n\n #### Loan count by reader ################################");
+        List<Document> documents = collection.find(filters).into(List.of());
+        Map<String, Long> loanCountByReader = documents.stream()
+                .flatMap(doc -> doc.getList("loans", Document.class).stream())
+                .filter(loan -> loan.getString("return_date").isEmpty())
+                .collect(Collectors.groupingBy(
+                        loan -> loan.getString("id_reader"),
+                        Collectors.counting()
+                ));
+
+        for (Map.Entry<String, Long> entry : loanCountByReader.entrySet()) {
+            System.out.println("Reader ID: " + entry.getKey() + ", Number of Loans with return_date = \"\": " + entry.getValue());
+        }
+    }
+
     public void loaner_information(Document whereQuery) {
         FindIterable<Document> readers = collection.find(whereQuery);
         readers.forEach(printDocument());
