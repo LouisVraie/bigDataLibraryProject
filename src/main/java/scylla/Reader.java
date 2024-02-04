@@ -14,6 +14,7 @@ import scylla.utils.Converter;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -135,7 +136,7 @@ public class Reader implements CRUD<Reader>{
             .withPartitionKey("id_reader", DataTypes.UUID)
             .withColumn("firstname", DataTypes.TEXT)
             .withColumn("lastname", DataTypes.TEXT)
-            .withColumn("birth_date", DataTypes.DATE)
+            .withColumn("birth_date", DataTypes.TIMESTAMP)
             .withColumn("street", DataTypes.TEXT)
             .withColumn("city", DataTypes.TEXT)
             .withColumn("postal_code", DataTypes.TEXT)
@@ -146,7 +147,7 @@ public class Reader implements CRUD<Reader>{
         System.out.println("Table '" + TABLE_NAME + "' created successfully.");
     }
 
-    public void insertFromJSON(String filepath){
+    public static void insertFromJSON(String filepath){
 
         try (CqlSession session = database.getSession()){
             JSONArray jsonArray = Converter.getJSONFromFile(filepath);
@@ -155,26 +156,34 @@ public class Reader implements CRUD<Reader>{
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
 
-                UUID idReader = Converter.intToUUID(jsonObject.getInt("idReader"), Reader.TABLE_NAME);
+                UUID idReader = Converter.intToUUID(jsonObject.getInt("id_reader"), Reader.TABLE_NAME);
                 String firstname = jsonObject.getString("firstname");
                 String lastname = jsonObject.getString("lastname");
-                String birthDate = Converter.formatDate(jsonObject.getString("birth_date"));
+                Instant birthDate = Converter.stringToDate(jsonObject.getString("birth_date"));
                 String street = jsonObject.getString("street");
                 String city = jsonObject.getString("city");
-                String postalCode = jsonObject.getString("postal_code");
+                String postalCode;
+                try {
+                    postalCode = jsonObject.getString("postal_code");
+                } catch (Exception e) {
+                    postalCode = "00000";
+                }
                 String email = jsonObject.getString("email");
-                String phoneNb = jsonObject.getString("phoneNb");
+                String phoneNb = jsonObject.getString("phone_nb");
 
+                String insertQuery = "INSERT INTO "+Reader.TABLE_NAME+" (id_reader, firstname, lastname, birth_date, street, city, postal_code, email, phone_nb) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 // Insert into ScyllaDB
                 ResultSet result = session.execute(
-                        "INSERT INTO your_table (idReader, firstname, lastname, birth_date, street, city, postal_code, email, phoneNb) " +
-                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        insertQuery,
                         idReader, firstname, lastname, birthDate, street, city, postalCode, email, phoneNb);
                 if(result.wasApplied())
                 {
                     count++;
                 }
             }
+            System.out.println(TABLE_NAME + " : " + count + "/"+ jsonArray.length() +" imported !");
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -185,25 +194,6 @@ public class Reader implements CRUD<Reader>{
 
     public List<Book> getAll(){
         return null;
-    }
-
-    public static void insertFromJSONFile(File jsonFile) {
-        try (CqlSession session = database.getSession()) {
-            // Check if it is an array of objects or just an object
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode jsonNode = mapper.readTree(jsonFile);
-            if (jsonNode.isArray()) {
-                for (JsonNode node : jsonNode) {
-                    Reader entity = mapper.readValue(node.toString(), Reader.class);
-                    insert(entity);
-                }
-            } else {
-                Reader entity = mapper.readValue(jsonNode.toString(), Reader.class);
-                insert(entity);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public static void insert(Reader entity){

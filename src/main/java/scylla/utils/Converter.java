@@ -4,7 +4,9 @@ import org.json.JSONArray;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
@@ -56,6 +58,16 @@ public class Converter {
         String formattedDate = localDate.format(outputFormatter);
 
         return formattedDate;
+    }
+
+    public static Instant stringToDate(String dateString) {
+        // Convertir la chaîne de date en un objet LocalDate
+        LocalDate localDate = LocalDate.parse(dateString);
+
+        // Convertir l'objet LocalDate en un objet java.time.Instant
+        Instant instant = localDate.atStartOfDay().toInstant(ZoneOffset.UTC);
+
+        return instant;
     }
 
     public static JSONArray getJSONFromFile(String filepath){

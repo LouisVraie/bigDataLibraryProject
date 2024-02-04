@@ -138,9 +138,9 @@ public class Loan {
                 .withColumn("lastname", DataTypes.TEXT)
                 .withColumn("title", DataTypes.TEXT)
                 .withColumn("authors", DataTypes.setOf(SchemaBuilder.udt(Author.TYPE_NAME, true)))
-                .withColumn("loan_date", DataTypes.DATE)
-                .withColumn("expiry_date", DataTypes.DATE)
-                .withColumn("due_date", DataTypes.DATE);
+                .withColumn("loan_date", DataTypes.TIMESTAMP)
+                .withColumn("expiry_date", DataTypes.TIMESTAMP)
+                .withColumn("due_date", DataTypes.TIMESTAMP);
 
         session.execute(createTable.build());
         System.out.println("Table '"+TABLE_NAME+"' created successfully.");
