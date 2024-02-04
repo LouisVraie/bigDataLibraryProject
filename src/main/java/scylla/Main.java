@@ -22,20 +22,17 @@ public class Main {
     private final static Database database = new Database();
 
     public static void main(String[] args) {
-        database.createDatabase();
+        /*database.createDatabase();
 
         // Insert JSON files
         Reader.insertFromJSON(Main.class.getClassLoader().getResource("import/readerscylladb.json").getFile());
         Book.insertFromJSON(Main.class.getClassLoader().getResource("import/bookscylladb.json").getFile());
         Copy.insertFromJSON(Main.class.getClassLoader().getResource("import/copyscylladb.json").getFile());
         Loan.insertFromJSON(Main.class.getClassLoader().getResource("import/loanscylladb.json").getFile());
-        
+        */
         // Test for each class
-        Reader.testReader();
+        //Reader.testReader();
         Book.testBook();
-
-        // Book book = new Book(UUID.randomUUID(), "The Hobbit", 1937, "The Hobbit is a children's fantasy novel by English author J. R. R. Tolkien.", Set.of("Fantasy"), Set.of(new Author("J. R. R.", "Tolkien")));
-        // Book.insert(book);
     }
 
     public static void test(){

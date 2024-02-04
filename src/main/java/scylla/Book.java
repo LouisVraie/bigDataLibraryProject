@@ -4,13 +4,17 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.metadata.schema.ClusteringOrder;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.querybuilder.*;
+import com.datastax.oss.driver.api.querybuilder.delete.Delete;
 import com.datastax.oss.driver.api.querybuilder.insert.Insert;
 import com.datastax.oss.driver.api.querybuilder.schema.CreateTable;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.*;
 
 import com.datastax.oss.driver.api.querybuilder.select.Select;
+import com.datastax.oss.driver.api.querybuilder.update.Update;
+
 import scylla.type.Author;
 import scylla.utils.Converter;
 
@@ -100,11 +104,37 @@ public class Book implements CRUD<Book>, TableOperation{
     }
 
     public static void testBook(){
+        // Insert a book
+        Book book = new Book(UUID.fromString("00000000-0000-0000-0000-100000000000"), "The Hobbit", 1937, "The Hobbit is a children's fantasy novel by English author J. R. R. Tolkien.", Set.of("Fantasy"), Set.of(new Author("J. R. R.", "Tolkien")));
+        book.insert();
 
+        // Insert multiple books
+        ArrayList<Book> books = new ArrayList<>();
+        books.add(new Book(UUID.fromString("00000000-0000-0000-0000-100000000001"), "Zathura", 2002, "Zathura is an illustrated children's book by the American author Chris Van Allsburg.", Set.of("Children's literature"), Set.of(new Author("Chris", "Van Allsburg"))));
+        books.add(new Book(UUID.fromString("00000000-0000-0000-0000-100000000002"), "The Polar Express", 1985, "The Polar Express is a children's book written and illustrated by Chris Van Allsburg.", Set.of("Children's literature"), Set.of(new Author("Chris", "Van Allsburg"))));
+        books.add(new Book(UUID.fromString("00000000-0000-0000-0000-100000000003"), "Jumanji", 1981, "Jumanji is a 1981 fantasy children's picture book, written and illustrated by the American author Chris Van Allsburg.", Set.of("Children's literature"), Set.of(new Author("Chris", "Van Allsburg"))));
+        Book.insert(books);
 
+        // Get a book by id
+        Book getBook = book.get(UUID.fromString("00000000-0000-0000-0000-100000000000"));
+        System.out.println(getBook);
+
+        // Get all books
+        List<Book> allBooks = book.getAll(null, 10, "title");
+        for (Book b : allBooks) {
+            System.out.println(b);
+        }
+
+        // Update a book
+        Book updateBook = new Book(UUID.fromString("00000000-0000-0000-0000-100000000000"), "The Hobbit", 1937, "The Hobbit is a children's fantasy novel by English author J. R. R. Tolkien.", Set.of("Fantasy"), Set.of(new Author("J. R. R.", "Tolkien")));
+        updateBook.update(UUID.fromString("00000000-0000-0000-0000-100000000000"), updateBook);
+
+        // Delete a book
+        book.delete(UUID.fromString("00000000-0000-0000-0000-100000000000"));
+        
         // Search by name
-        Set<Book> books = Book.searchByName("Zathura");
-        System.out.println(books);
+        Set<Book> searchBooks = Book.searchByName("Zathura");
+        System.out.println(searchBooks);
     }
 
     // Getters et Setters
@@ -179,39 +209,102 @@ public class Book implements CRUD<Book>, TableOperation{
     }
 
     public Book get(UUID id){
-        return null;
+        try (CqlSession session = database.getSession()){
+            System.out.println(TABLE_NAME+" get :");
+            Select select = selectFrom(TABLE_NAME)
+                    .all()
+                    .whereColumn("id_book").isEqualTo(literal(id)).allowFiltering();
+            Row row = session.execute(select.build()).one();
+
+            if (row != null) {
+                return buildBookFromRow(row);
+            } else {
+                return null;
+            }
+        }
     }
 
-    public List<Book> getAll(){
-        return null;
+    public List<Book> getAll(Map<String, Object> whereConditions, int limit, String sortByColumn){
+        List<Book> books = new ArrayList<>();
+        try (CqlSession session = database.getSession()) {
+            System.out.println(TABLE_NAME+" get all :");
+            Select select = selectFrom(TABLE_NAME).all().allowFiltering().limit(limit);
+
+            // Ajouter l'option de tri si spécifiée
+            if (sortByColumn != null && !sortByColumn.isEmpty()) {
+                select.orderBy(sortByColumn, ClusteringOrder.ASC);
+            }
+
+            if (whereConditions != null && !whereConditions.isEmpty()) {
+                whereConditions.forEach((column, value) ->
+                    select.whereColumn(column).isEqualTo(literal(value)));
+            }
+
+            ResultSet resultSet = session.execute(select.build());
+
+            for (Row row : resultSet) {
+                books.add(buildBookFromRow(row));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return books;
     }
 
-    public static void insert(Book book){
+    public void insert(){
         try (CqlSession session = database.getSession()){
 
             Insert insert = insertInto(Book.TABLE_NAME)
-                .value("id_book", literal(book.getIdBook()))
-                .value("title", literal(book.getTitle()))
-                .value("year", literal(book.getYear()))
-                .value("summary", literal(book.getSummary()))
-                .value("categories", literal(book.getCategories()))
-                .value("authors", literal(book.getAuthorsFormated()));
+                .value("id_book", literal(this.getIdBook()))
+                .value("title", literal(this.getTitle()))
+                .value("year", literal(this.getYear()))
+                .value("summary", literal(this.getSummary()))
+                .value("categories", literal(this.getCategories()))
+                .value("authors", literal(this.getAuthorsFormated()));
 
             ResultSet result = session.execute(insert.ifNotExists().build());
 
             System.out.println("Book inserted ? "+ result.wasApplied());
         }
     }
+    public static void insert(ArrayList<Book> books) {
+        for (Book entity : books) {
+            entity.insert();
+        }
+    }
 
     public void update(UUID id, Book entity){
+        try (CqlSession session = database.getSession()) {
+            System.out.println(TABLE_NAME + " update :");
+            Update update = QueryBuilder.update(TABLE_NAME)
+                .setColumn("title", literal(entity.getTitle()))
+                .setColumn("year", literal(entity.getYear()))
+                .setColumn("summary", literal(entity.getSummary()))
+                .setColumn("categories", literal(entity.getCategories()))
+                .setColumn("authors", literal(entity.getAuthorsFormated()))
+                .whereColumn("id_book").isEqualTo(literal(id));
 
+            ResultSet result = session.execute(update.build());
+            System.out.println(TABLE_NAME + " updated ? " + result.wasApplied());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void delete(UUID id){
+        try (CqlSession session = database.getSession()) {
+            System.out.println(TABLE_NAME + " delete :");
+            Delete delete = deleteFrom(TABLE_NAME)
+                    .whereColumn("id_book").isEqualTo(literal(id));
 
+            ResultSet result = session.execute(delete.build());
+            System.out.println(TABLE_NAME + " deleted ? " + result.wasApplied());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public static Book toBook(Row row){
+    public static Book buildBookFromRow(Row row){
         Set<String> categories = (Set<String>) row.getObject("categories");
         Set<Map<String, String>> authors1 = (Set<Map<String, String>>) row.getObject("authors");
 
@@ -257,7 +350,7 @@ public class Book implements CRUD<Book>, TableOperation{
     }
 
     public static Set<Book> searchByName(String name) {
-        System.out.println();
+        System.out.println(TABLE_NAME + " : searchByName");
         Set<Book> books = new HashSet<>();
 
         try (CqlSession session = database.getSession()) {
@@ -269,7 +362,7 @@ public class Book implements CRUD<Book>, TableOperation{
             ResultSet rs = session.execute(statement);
 
             for (Row row : rs) {
-                books.add(Book.toBook(row));
+                books.add(Book.buildBookFromRow(row));
             }
 
         }

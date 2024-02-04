@@ -39,7 +39,7 @@ public class Database {
     public void createDatabase()
     {
         try (CqlSession session = getSession()) {
-            dropTables(session);
+            //dropTables(session);
             createTables(session);
         } catch (Exception e) {
             System.out.println("ERROR ! The database wasn't created !");
