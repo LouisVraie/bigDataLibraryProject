@@ -1,9 +1,9 @@
-# bigDataLibraryProject
+# Big Data : Library Project
 Java application using MongoDB and ScyllaDB for library management.
 
 The project is divided in 2 parts :
-- MongoDB
-- ScyllaDB
+- [MongoDB](https://www.mongodb.com)
+- [ScyllaDB](https://www.scylladb.com)
 
 ## Prerequisites
 
@@ -19,7 +19,6 @@ docker exec -it scylla nodetool status
 ```bash
 docker exec -it scylla cqlsh
 ```
-
 
 ## MongoDB
 
