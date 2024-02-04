@@ -11,7 +11,7 @@ public interface CRUD<T> {
         return null; // Remplacer null par l'implémentation réelle
     }
 
-    static <T> List<T> getAll() {
+    static <T> List<T> getAll(Integer limit) {
         // Implémentation de la méthode getAll
         return null; // Remplacer null par l'implémentation réelle
     }

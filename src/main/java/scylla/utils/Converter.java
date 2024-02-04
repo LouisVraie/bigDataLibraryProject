@@ -3,8 +3,6 @@ package scylla.utils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import scylla.type.Author;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.time.Instant;

@@ -25,13 +25,13 @@ public class Main {
         database.createDatabase();
 
         // Insert JSON files
-        Reader.insertFromJSON(Main.class.getClassLoader().getResource("import/readerscylladb.json").getFile());
+        /*Reader.insertFromJSON(Main.class.getClassLoader().getResource("import/readerscylladb.json").getFile());
         Book.insertFromJSON(Main.class.getClassLoader().getResource("import/bookscylladb.json").getFile());
         Copy.insertFromJSON(Main.class.getClassLoader().getResource("import/copyscylladb.json").getFile());
         Loan.insertFromJSON(Main.class.getClassLoader().getResource("import/loanscylladb.json").getFile());
-
-        Reader reader = new Reader(UUID.randomUUID(), "John", "Doe", "1990-01-01", "1234 Main St", "Anytown", "12345", "john.doe@example.com", "123-456-7890");
-        Reader.insert(reader);
+        */
+        // Test for each class
+        Reader.testReader();
         // Book book = new Book(UUID.randomUUID(), "The Hobbit", 1937, "The Hobbit is a children's fantasy novel by English author J. R. R. Tolkien.", Set.of("Fantasy"), Set.of(new Author("J. R. R.", "Tolkien")));
         // Book.insert(book);
     }
