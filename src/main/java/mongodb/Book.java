@@ -18,6 +18,7 @@ public class Book extends MongoDBCollection {
     }
 
     public void group_by_categories(Document filters) {
+        System.out.println(" \n\n\n #### Group by categories ################################");
         Bson match = Aggregates.match(filters);
         Bson unwind = Aggregates.unwind("$categories");
         Bson group = Aggregates.group("$categories", Accumulators.sum("count", 1));
@@ -27,6 +28,7 @@ public class Book extends MongoDBCollection {
     }
 
     public void copy_number(Document filters) {
+        System.out.println(" \n\n\n #### Copy number ################################");
         Bson match = Aggregates.match(filters);
         Bson unwind = Aggregates.unwind("$editions");
         Bson unwindCopies = Aggregates.unwind("$editions.copies");
@@ -37,6 +39,7 @@ public class Book extends MongoDBCollection {
     }
 
     public void worst_book_copies(Document filters) {
+        System.out.println(" \n\n\n #### Worst book copies ################################");
         Bson match = Aggregates.match(filters);
         Bson unwind = Aggregates.unwind("$editions");
         Bson unwindCopies = Aggregates.unwind("$editions.copies");
@@ -50,6 +53,7 @@ public class Book extends MongoDBCollection {
     }
 
     public void available_copies(Document filters) {
+        System.out.println(" \n\n\n #### Available copies ################################");
         Bson match = Aggregates.match(filters);
         Bson unwind = Aggregates.unwind("$editions");
         Bson unwindCopies = Aggregates.unwind("$editions.copies");
@@ -67,6 +71,7 @@ public class Book extends MongoDBCollection {
     // Conceptual approaches provided; actual implementation would depend on specific application logic and data model
 
     public void most_read_author(int number) {
+        System.out.println(" \n\n\n #### Most read author ################################");
         // Stage 1: Unwind the loans array from the readers collection
         Bson unwindLoans = Aggregates.unwind("$loans");
 
@@ -114,6 +119,7 @@ public class Book extends MongoDBCollection {
     }
 
     public void loan_information(Document whereQuery) {
+        System.out.println(" \n\n\n #### Loan information ################################");
         // Assuming we're looking for loan information for specific criteria
         Bson match = Aggregates.match(whereQuery);
         List<Bson> pipeline = Arrays.asList(match);
@@ -123,6 +129,7 @@ public class Book extends MongoDBCollection {
     }
 
     public void loan_trends(int number) {
+        System.out.println(" \n\n\n #### Loan trends ################################");
         // Stage 1: Unwind the loans array from the readers collection
         Bson unwindLoans = Aggregates.unwind("$loans");
 

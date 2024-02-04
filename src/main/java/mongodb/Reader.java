@@ -37,11 +37,13 @@ public class Reader extends MongoDBCollection {
     }
 
     public void loaner_information(Document whereQuery) {
+        System.out.println(" \n\n\n #### Loaner information ################################");
         FindIterable<Document> readers = collection.find(whereQuery);
         readers.forEach(printDocument());
     }
 
     public void late_returns(Document whereQuery) {
+        System.out.println(" \n\n\n #### Late returns ################################");
         Bson filter = Filters.and(
                 whereQuery,
                 Filters.lt("loans.expiry_date", new Date()),
@@ -53,6 +55,7 @@ public class Reader extends MongoDBCollection {
     }
 
     public void loan_count_by_day(Document filters) {
+        System.out.println(" \n\n\n #### Loan count by days ################################");
         FindIterable<Document> readers = collection.find(filters);
         Map<Date, Long> loanCountByDay = new HashMap<>();
 
@@ -69,6 +72,7 @@ public class Reader extends MongoDBCollection {
     }
 
     public boolean can_loan_copies(String id_reader, int nb_wanted_loan) {
+        System.out.println(" \n\n\n #### Can loand copies ################################");
         Document reader = collection.find(new Document("id_reader", id_reader)).first();
         if (reader == null) return false; // Reader not found
 
