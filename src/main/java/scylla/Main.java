@@ -22,18 +22,18 @@ public class Main {
     private final static Database database = new Database();
 
     public static void main(String[] args) {
-        /*database.createDatabase();
+        database.createDatabase();
 
         // Insert JSON files
         Reader.insertFromJSON(Main.class.getClassLoader().getResource("import/readerscylladb.json").getFile());
         Book.insertFromJSON(Main.class.getClassLoader().getResource("import/bookscylladb.json").getFile());
         Copy.insertFromJSON(Main.class.getClassLoader().getResource("import/copyscylladb.json").getFile());
         Loan.insertFromJSON(Main.class.getClassLoader().getResource("import/loanscylladb.json").getFile());
-        */
+        
         // Test for each class
-        //Reader.testReader();
-        //Book.testBook();
-        // Copy.testCopy();
+        Reader.testReader();
+        Book.testBook();
+        Copy.testCopy();
         Loan.testLoan();
     }
 
