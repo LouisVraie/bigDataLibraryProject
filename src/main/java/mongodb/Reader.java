@@ -8,6 +8,8 @@ import mongodb.MongoDBCollection;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -20,30 +22,32 @@ public class Reader extends MongoDBCollection {
         this.collection = database.getCollection(collectionName);
     }
 
-    public void loan_count_by_reader(Document filters){
+    public void loan_count_by_reader(Document filters) {
         System.out.println(" \n\n\n #### Loan count by reader ################################");
         // Use a mutable list
         List<Document> documents = new ArrayList<>();
         collection.find(filters).into(documents);
-        Map<String, Long> loanCountByReader = documents.stream()
-                .flatMap(doc -> {
-                    List<Document> loans = doc.getList("loans", Document.class, Collections.emptyList());
-                    return loans.stream();
-                })
-                .filter(loan -> {
-                    // Check if "return_date" exists and compare, provide default value otherwise
-                    String returnDate = loan.getString("return_date"); // Retrieve the return date
-                    return returnDate == null || returnDate.isEmpty(); // Check if null or empty
-                })
-                .collect(Collectors.groupingBy(
-                        loan -> loan.getString("id_reader"),
-                        Collectors.counting()
-                ));
 
-        for (Map.Entry<String, Long> entry : loanCountByReader.entrySet()) {
-            System.out.println("Reader ID: " + entry.getKey() + ", Number of Loans with return_date = \"\": " + entry.getValue());
-        }
+        documents.forEach(doc -> {
+            // Fetching 'id_reader' as an Integer since it's stored as an Integer
+            Integer readerId = doc.getInteger("id_reader"); // Correctly use getInteger for an integer ID
+            if (readerId != null) {
+                long loanCount = Optional.ofNullable(doc.getList("loans", Document.class))
+                        .orElse(Collections.emptyList()) // Use an empty list if 'loans' is null
+                        .stream()
+                        .filter(loan -> {
+                            Object dueDate = loan.get("due_date");
+                            // Check if due_date is either null or an empty string, regardless of its type
+                            return dueDate == null || (dueDate instanceof String && ((String) dueDate).isEmpty());
+                        })
+                        .count(); // Count these loans
+
+                System.out.println("Reader ID: " + readerId + ", Number of Loans without due_date: " + loanCount);
+            }
+        });
     }
+
+
 
 
     public void loaner_information(Document whereQuery) {
@@ -66,14 +70,21 @@ public class Reader extends MongoDBCollection {
 
     public void loan_count_by_day(Document filters) {
         System.out.println(" \n\n\n #### Loan count by days ################################");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd"); // Adjust the format to match your date strings
         FindIterable<Document> readers = collection.find(filters);
         Map<Date, Long> loanCountByDay = new HashMap<>();
 
         for (Document reader : readers) {
             List<Document> loans = reader.getList("loans", Document.class);
             for (Document loan : loans) {
-                Date loanDate = loan.getDate("loan_date");
-                loanCountByDay.put(loanDate, loanCountByDay.getOrDefault(loanDate, 0L) + 1);
+                String loanDateString = loan.getString("loan_date");
+                try {
+                    Date loanDate = dateFormat.parse(loanDateString); // Parse the string to a Date
+                    loanCountByDay.put(loanDate, loanCountByDay.getOrDefault(loanDate, 0L) + 1);
+                } catch (ParseException e) {
+                    // Handle the case where the date string cannot be parsed
+                    System.err.println("Error parsing date string: " + loanDateString);
+                }
             }
         }
 
