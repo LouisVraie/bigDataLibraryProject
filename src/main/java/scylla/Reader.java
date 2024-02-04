@@ -135,7 +135,7 @@ public class Reader implements CRUD<Reader>{
             .withPartitionKey("id_reader", DataTypes.UUID)
             .withColumn("firstname", DataTypes.TEXT)
             .withColumn("lastname", DataTypes.TEXT)
-            .withColumn("birth_date", DataTypes.DATE)
+            .withColumn("birth_date", DataTypes.TIMESTAMP)
             .withColumn("street", DataTypes.TEXT)
             .withColumn("city", DataTypes.TEXT)
             .withColumn("postal_code", DataTypes.TEXT)

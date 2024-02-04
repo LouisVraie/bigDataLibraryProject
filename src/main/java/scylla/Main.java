@@ -24,10 +24,10 @@ public class Main {
     public static void main(String[] args) {
         database.createDatabase();
 
-        Reader reader = new Reader(UUID.randomUUID(), "John", "Doe", "1990-01-01", "1234 Main St", "Anytown", "12345", "john.doe@example.com", "123-456-7890");
-        Reader.insert(reader);
-        // Book book = new Book(UUID.randomUUID(), "The Hobbit", 1937, "The Hobbit is a children's fantasy novel by English author J. R. R. Tolkien.", Set.of("Fantasy"), Set.of(new Author("J. R. R.", "Tolkien")));
-        // Book.insert(book);
+        // Reader reader = new Reader(UUID.randomUUID(), "John", "Doe", "1990-01-01", "1234 Main St", "Anytown", "12345", "john.doe@example.com", "123-456-7890");
+        // Reader.insert(reader);
+        Book book = new Book(UUID.randomUUID(), "The Hobbit", 1937, "The Hobbit is a children's fantasy novel by English author J. R. R. Tolkien.", Set.of("Fantasy"), Set.of(new Author("J. R. R.", "Tolkien")));
+        Book.insert(book);
     }
 
     public static void test(){

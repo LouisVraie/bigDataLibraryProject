@@ -1,6 +1,7 @@
 package scylla;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.querybuilder.*;
@@ -12,9 +13,7 @@ import com.datastax.oss.driver.api.querybuilder.term.Term;
 import scylla.codec.AuthorCodec;
 import scylla.type.Author;
 
-import java.util.Set;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Book implements CRUD<Book> {
@@ -45,10 +44,11 @@ public class Book implements CRUD<Book> {
         CreateTable createTable = SchemaBuilder.createTable(TABLE_NAME).ifNotExists()
             .withPartitionKey("id_book", DataTypes.UUID)
             .withColumn("title", DataTypes.TEXT)
-            .withColumn("year", DataTypes.INT)
+            .withColumn("year", DataTypes.DOUBLE)
             .withColumn("summary", DataTypes.TEXT)
             .withColumn("categories", DataTypes.setOf(DataTypes.TEXT))
-            .withColumn("authors", DataTypes.setOf(SchemaBuilder.udt(Author.TYPE_NAME, true)));
+            // .withColumn("authors", DataTypes.setOf(SchemaBuilder.udt(Author.TYPE_NAME, true)));
+            .withColumn("authors", DataTypes.setOf(DataTypes.mapOf(DataTypes.TEXT, DataTypes.TEXT, true)));
 
         session.execute(createTable.build());
         System.out.println("Table '"+TABLE_NAME+"' created successfully.");
@@ -98,6 +98,17 @@ public class Book implements CRUD<Book> {
         return authors;
     }
 
+    public Set<Map<String, String>> getAuthorsFormated() {
+        Set<Map<String, String>> set = new HashSet<>();
+
+        for (Author author : authors) {
+            Map<String, String> map = new HashMap<>();
+            map.put(author.getFirstname(), author.getLastname());
+            set.add(map);
+        }
+        return set;
+    }
+
     public void setAuthors(Set<Author> authors) {
         this.authors = authors;
     }
@@ -132,7 +143,7 @@ public class Book implements CRUD<Book> {
                 .value("year", literal(book.getYear()))
                 .value("summary", literal(book.getSummary()))
                 .value("categories", literal(book.getCategories()))
-                .value("authors", literal(book.getAuthors(), Author.AUTHOR_SET_CODEC));
+                .value("authors", literal(book.getAuthorsFormated()));
 
             ResultSet result = session.execute(insert.ifNotExists().build());
 
